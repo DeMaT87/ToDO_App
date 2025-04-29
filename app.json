@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Dapp_gemini",
-    "slug": "Dapp_gemini",
+    "name": "dapp_todo",
+    "slug": "dapp_todo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
