@@ -2,11 +2,11 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-
+// Importa pantallas y navegadores
 import LoginScreen from '../screens/LoginScreen';
-import HomeScreen from '../screens/HomeScreen';
+import SignUpScreen from '../screens/SignUpScreen'; // <-- Importa la nueva pantalla
+import MainTabNavigator from './MainTabNavigator';
 import TaskDetailScreen from '../screens/TaskDetailScreen';
-
 
 const Stack = createNativeStackNavigator();
 
@@ -14,26 +14,32 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        {/* Pantalla de Login */}
+        {/* Grupo de Autenticación */}
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{ title: 'Inicio de Sesión' }}
+          options={{ headerShown: false }}
         />
-        {/* Pantalla Home */}
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: 'Mis Tareas' }}
+        <Stack.Screen // <-- Añade la pantalla de SignUp
+          name="SignUp"
+          component={SignUpScreen}
+          options={{ title: 'Crear Cuenta' }} // Muestra un título en la barra
         />
-        {/* Pantalla de Detalle de Tarea */}
+
+        {/* Grupo Principal de la App (Tabs) */}
         <Stack.Screen
-          name="TaskDetail" 
+          name="MainApp"
+          component={MainTabNavigator}
+          options={{ headerShown: false }}
+        />
+
+        {/* Pantalla de Detalle */}
+        <Stack.Screen
+          name="TaskDetail"
           component={TaskDetailScreen}
-          options={{ title: 'Detalle de Tarea' }} 
+          options={{ title: 'Detalle de Tarea' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-

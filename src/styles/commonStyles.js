@@ -2,9 +2,9 @@ import { StyleSheet } from "react-native";
 
 export const commonStyles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1,    
     paddingHorizontal: 20,
-    paddingTop: 15,
+    paddingTop: 40,
     backgroundColor: "#ffffff",
   },
 
