@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Alert } from 'react-native'; // Añadido TouchableOpacity
+import { View, Text, Button, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { commonStyles, colors } from '../styles/commonStyles';
 
 export default function LoginScreen({ navigation }) {
-  const [username, setUsername] = useState('');
+  
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = () => {
     setError('');
-    if (username.toLowerCase() === 'admin' && password === '12345') {
+    
+    if (email.toLowerCase() === 'fake@fake.com' && password === '12345') {
       console.log('Login successful');
-      // Navega a 'MainApp' (el contenedor de las pestañas)
-      navigation.navigate('MainApp');
-      setUsername('');
+      navigation.navigate('MainApp'); 
+      setEmail(''); 
       setPassword('');
     } else {
       console.log('Login failed');
-      setError('Usuario o contraseña incorrectos.');
+      setError('Correo electrónico o contraseña incorrectos.');
     }
   };
 
-  // Función para navegar a la pantalla de registro
   const handleGoToSignUp = () => {
-    navigation.navigate('SignUp'); // Navega a la pantalla definida en AppNavigator
+    navigation.navigate('SignUp');
   };
 
   return (
@@ -31,14 +31,17 @@ export default function LoginScreen({ navigation }) {
       <View style={styles.content}>
         <Text style={commonStyles.title}>Inicio de Sesión</Text>
 
+        {/* Input para el Correo Electrónico */}
         <TextInput
-            placeholder="Usuario (admin)"
+            placeholder="Correo Electrónico (fake@fake.com)" 
             style={[commonStyles.input, styles.inputField]}
-            value={username}
-            onChangeText={setUsername}
+            value={email} 
+            onChangeText={setEmail}
+            keyboardType="email-address" 
             autoCapitalize="none"
         />
 
+        {/* Input para la Contraseña */}
         <TextInput
             placeholder="Contraseña (12345)"
             style={[commonStyles.input, styles.inputField]}
@@ -57,7 +60,6 @@ export default function LoginScreen({ navigation }) {
             />
         </View>
 
-        {/* Enlace para Crear Cuenta */}
         <TouchableOpacity onPress={handleGoToSignUp} style={styles.signUpLink}>
             <Text style={styles.signUpText}>¿No tienes cuenta? Crear una</Text>
         </TouchableOpacity>
@@ -67,7 +69,7 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
-// Estilos específicos de LoginScreen
+
 const styles = StyleSheet.create({
   content: {
     width: '85%',
@@ -77,15 +79,15 @@ const styles = StyleSheet.create({
       width: '100%',
       marginBottom: 15,
   },
-  buttonContainer: { // Contenedor para el botón principal
-      width: '100%', // Ocupa todo el ancho para centrar bien el botón si es necesario
-      marginBottom: 20, // Espacio antes del enlace de crear cuenta
+  buttonContainer: {
+      width: '100%',
+      marginBottom: 20,
   },
   signUpLink: {
       marginTop: 15,
   },
   signUpText: {
-      color: colors.primary, // Usa el color primario para el enlace
-      textDecorationLine: 'underline', // Subraya para indicar que es un enlace
+      color: colors.primary,
+      textDecorationLine: 'underline',
   }
 });
