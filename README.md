@@ -25,13 +25,6 @@ Este repositorio contiene el código fuente para un MVP (Minimum Viable Product)
     * Asignar/Modificar fecha y hora de vencimiento usando selectores nativos.
 * **Estilos Centralizados:** Uso de un archivo `commonStyles.js` para mantener la consistencia visual básica.
 
-## Próximos Pasos (Sugerencias)
 
-* Implementar estilos visuales más detallados.
-* Conectar la aplicación a una base de datos (ej. Firebase Firestore) para persistencia de datos.
-* Implementar autenticación real (ej. Firebase Authentication).
-* Mejorar la gestión de estado (ej. usando Context API o Zustand).
-* Añadir funcionalidades extra (prioridades, categorías, recordatorios, etc.).
-* Escribir pruebas unitarias e de integración.
 
 
