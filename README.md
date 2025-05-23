@@ -23,8 +23,7 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
 - **Autenticación con Firebase:**
   - Registro de nuevos usuarios con correo y contraseña (`SignUpScreen`).
   - Inicio de sesión de usuarios existentes (`LoginScreen`).
-  - Manejo global del estado de autenticación (`onAuthStateChanged` en `App.js`) para navegación condicional.
-- **Persistencia de Sesión Local:**
+  - **Persistencia de Sesión Local:**
   - Uso de `expo-sqlite` para recordar la sesión del usuario en el dispositivo.
   - Inicio de sesión automático si hay una sesión activa guardada.
 - **Navegación Principal:**
@@ -59,14 +58,7 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
 - **Estilos Centralizados:** Uso de `commonStyles.js` para una apariencia básica consistente.
 
 
-    - Crea un proyecto en la [Consola de Firebase](https://console.firebase.google.com/).
-    - Habilita **Authentication** (Email/Contraseña).
-    - Crea una **Realtime Database** (en modo de prueba para desarrollo inicial).
-    - Habilita **Storage** (con reglas de seguridad básicas para desarrollo).
-    - Registra tus apps (iOS y Android) en el proyecto de Firebase.
-    - Descarga los archivos `google-services.json` (para Android) y `GoogleService-Info.plist` (para iOS) y colócalos en la **raíz** de tu proyecto Expo.
-    - Copia las credenciales de configuración web de tu app Firebase en `src/firebase/firebaseConfig.js`.
-
+    
 2.  **Clonar el Repositorio (si aplica):**
 
     ```bash
