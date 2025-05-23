@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "584136044926",
+    "firebase_url": "https://tododata-c0787-default-rtdb.firebaseio.com",
+    "project_id": "tododata-c0787",
+    "storage_bucket": "tododata-c0787.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584136044926:android:7fa1f2314bcccb5faf432f",
+        "android_client_info": {
+          "package_name": "com.damian.dapptodo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDsCEafKJea-m9WIx9GVVXcekMTVnkLLI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,28 +6,41 @@ import {
   View,
   TouchableOpacity,
   StyleSheet,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { deleteTask, toggleComplete } from "../store/tasksSlice";
+import { createSelector } from "@reduxjs/toolkit";
+
+import {
+  deleteTaskFromFirebase,
+  updateTaskInFirebase,
+} from "../store/tasksSlice";
 import { commonStyles, colors } from "../styles/commonStyles";
 import { Ionicons } from "@expo/vector-icons";
+
+const selectTasks = (state) => state.tasks.tasks;
+const selectCompletedTasks = createSelector([selectTasks], (tasks) =>
+  tasks.filter((task) => task.completed)
+);
 
 export default function CompletedTasksScreen({ navigation }) {
   const dispatch = useDispatch();
 
-  const allTasks = useSelector((state) => state.tasks.tasks);
+  const completedTasks = useSelector(selectCompletedTasks);
 
-  const completedTasks = allTasks.filter((task) => task.completed);
+  const taskStatus = useSelector((state) => state.tasks.status);
 
   const goToDetail = (taskId) => {
     navigation.navigate("TaskDetail", { taskId: taskId });
   };
 
   const handleDeleteTask = (id) => {
-    dispatch(deleteTask(id));
+    dispatch(deleteTaskFromFirebase(id)).unwrap();
   };
-  const handleToggleComplete = (id) => {
-    dispatch(toggleComplete(id));
+
+  const handleToggleToPending = (task) => {
+    dispatch(updateTaskInFirebase({ id: task.id, completed: false })).unwrap();
   };
 
   const renderItem = ({ item }) => (
@@ -48,12 +61,21 @@ export default function CompletedTasksScreen({ navigation }) {
               })}
             </Text>
           )}
+          {item.locationAddress && (
+            <Text style={styles.locationText}>
+              <Ionicons
+                name="location-outline"
+                size={12}
+                color={colors.darkGrey}
+              />{" "}
+              {item.locationAddress.substring(0, 35)}...
+            </Text>
+          )}
         </View>
-
         <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation();
-            handleToggleComplete(item.id);
+            handleToggleToPending(item);
           }}
           style={styles.actionButton}
         >
@@ -63,7 +85,6 @@ export default function CompletedTasksScreen({ navigation }) {
             color={colors.warning}
           />
         </TouchableOpacity>
-
         <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation();
@@ -79,7 +100,14 @@ export default function CompletedTasksScreen({ navigation }) {
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      {completedTasks.length === 0 ? (
+      {taskStatus === "loading" && completedTasks.length === 0 && (
+        <ActivityIndicator
+          size="large"
+          color={colors.primary}
+          style={{ marginTop: 20 }}
+        />
+      )}
+      {completedTasks.length === 0 && taskStatus !== "loading" ? (
         <View style={styles.emptyContainer}>
           <Text style={commonStyles.text}>No hay tareas completadas.</Text>
         </View>
@@ -96,9 +124,7 @@ export default function CompletedTasksScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  list: {
-    flex: 1,
-  },
+  list: { flex: 1 },
   taskItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -107,23 +133,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.grey,
     backgroundColor: colors.light,
+    paddingHorizontal: 5,
   },
-  taskTextContainer: {
-    flex: 1,
-    marginRight: 10,
-  },
-  dueDateText: {
-    fontSize: 12,
-    color: colors.darkGrey,
-    marginTop: 4,
-  },
-  actionButton: {
-    padding: 10,
-    marginLeft: 5,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  taskTextContainer: { flex: 1, marginRight: 10 },
+  dueDateText: { fontSize: 12, color: colors.darkGrey, marginTop: 4 },
+  locationText: { fontSize: 11, color: colors.darkGrey, marginTop: 2 },
+  actionButton: { padding: 10, marginLeft: 5 },
+  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

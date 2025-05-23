@@ -6,23 +6,57 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.damian.dapptodo",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Esta aplicación necesita acceso a tu galería para que puedas seleccionar una foto de perfil.",
+        "NSCameraUsageDescription": "Esta aplicación necesita acceso a tu cámara para que puedas tomar una foto de perfil.",
+        "NSMicrophoneUsageDescription": "Esta aplicación necesita acceso a tu micrófono si grabas videos con la cámara.",
+        "NSLocationWhenInUseUsageDescription": "Esta aplicación necesita acceso a tu ubicación para adjuntarla a las tareas.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Esta aplicación necesita acceso a tu ubicación para adjuntarla a las tareas y para futuras funcionalidades de recordatorios basados en ubicación."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.damian.dapptodo",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "La aplicación necesita acceso a tus fotos para que puedas seleccionar una imagen de perfil.",
+          "cameraPermission": "La aplicación necesita acceso a tu cámara para que puedas tomar una foto de perfil."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Permitir que $(PRODUCT_NAME) use tu ubicación para adjuntarla a las tareas y para futuras funcionalidades de recordatorios basados en ubicación.",
+          "locationWhenInUsePermission": "Permitir que $(PRODUCT_NAME) use tu ubicación para adjuntarla a las tareas."
+        }
+      ]
+    ]
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   SafeAreaView,
   View,
@@ -8,136 +8,190 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-} from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { addTask, deleteTask, toggleComplete } from '../store/tasksSlice';
-import { commonStyles, colors } from '../styles/commonStyles';
-import { Ionicons } from '@expo/vector-icons';
+  ActivityIndicator,
+} from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import { createSelector } from "@reduxjs/toolkit";
+
+import {
+  addTaskToFirebase,
+  deleteTaskFromFirebase,
+  updateTaskInFirebase,
+} from "../store/tasksSlice";
+import { commonStyles, colors } from "../styles/commonStyles";
+import { Ionicons } from "@expo/vector-icons";
+
+const selectTasks = (state) => state.tasks.tasks;
+const selectPendingTasks = createSelector([selectTasks], (tasks) =>
+  tasks.filter((task) => !task.completed)
+);
 
 export default function HomeScreen({ navigation }) {
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const dispatch = useDispatch();
 
-  const pendingTasks = useSelector((state) =>
-    state.tasks.tasks.filter(task => !task.completed)
-  );
+  const pendingTasks = useSelector(selectPendingTasks);
+
+  const taskStatus = useSelector((state) => state.tasks.status);
+  const taskError = useSelector((state) => state.tasks.error);
 
   const handleAddTask = () => {
     if (inputText.trim().length > 0) {
-      dispatch(addTask({ text: inputText.trim() }));
-      setInputText('');
+      dispatch(addTaskToFirebase({ text: inputText.trim() }))
+        .unwrap()
+        .then(() => {
+          setInputText("");
+          console.log("Task added to Firebase successfully");
+        })
+        .catch((error) => {
+          console.error("Failed to add task to Firebase:", error);
+
+          Alert.alert("Error", "No se pudo añadir la tarea.");
+        });
     }
   };
 
   const handleDeleteTask = (id) => {
-    dispatch(deleteTask(id));
+    dispatch(deleteTaskFromFirebase(id))
+      .unwrap()
+      .then(() => console.log("Task deleted from Firebase successfully"))
+      .catch((error) => {
+        console.error("Failed to delete task from Firebase:", error);
+        Alert.alert("Error", "No se pudo eliminar la tarea.");
+      });
   };
 
-  const handleToggleComplete = (id) => {
-    dispatch(toggleComplete(id));
+  const handleToggleComplete = (task) => {
+    dispatch(updateTaskInFirebase({ id: task.id, completed: !task.completed }))
+      .unwrap()
+      .then(() =>
+        console.log("Task completion toggled in Firebase successfully")
+      )
+      .catch((error) => {
+        console.error("Failed to toggle task completion in Firebase:", error);
+        Alert.alert("Error", "No se pudo actualizar el estado de la tarea.");
+      });
   };
 
   const goToDetail = (taskId) => {
-    navigation.navigate('TaskDetail', { taskId: taskId });
+    navigation.navigate("TaskDetail", { taskId: taskId });
   };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => goToDetail(item.id)}>
-        <View style={styles.taskItem}>
-            <View style={styles.taskTextContainer}>
-                <Text style={commonStyles.text}>
-                {item.text}
-                </Text>
-                {item.dueDate && (
-                <Text style={styles.dueDateText}>
-                    Vence: {new Date(item.dueDate).toLocaleDateString()} {new Date(item.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-                )}
-            </View>
-            <TouchableOpacity onPress={(e) => {e.stopPropagation(); handleToggleComplete(item.id)}} style={styles.actionButton}>
-                 <Ionicons name="ellipse-outline" size={22} color={colors.warning} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={(e) => {e.stopPropagation(); handleDeleteTask(item.id)}} style={styles.actionButton}>
-                 <Ionicons name="trash-outline" size={22} color={colors.danger} />
-            </TouchableOpacity>
+      <View style={styles.taskItem}>
+        <View style={styles.taskTextContainer}>
+          <Text style={commonStyles.text}>{item.text}</Text>
+          {item.dueDate && (
+            <Text style={styles.dueDateText}>
+              Vence: {new Date(item.dueDate).toLocaleDateString()}{" "}
+              {new Date(item.dueDate).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+          )}
+          {item.locationAddress && (
+            <Text style={styles.locationText}>
+              <Ionicons
+                name="location-outline"
+                size={12}
+                color={colors.darkGrey}
+              />{" "}
+              {item.locationAddress.substring(0, 35)}...
+            </Text>
+          )}
         </View>
+        <TouchableOpacity
+          onPress={(e) => {
+            e.stopPropagation();
+            handleToggleComplete(item);
+          }}
+          style={styles.actionButton}
+        >
+          <Ionicons name="ellipse-outline" size={22} color={colors.warning} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={(e) => {
+            e.stopPropagation();
+            handleDeleteTask(item.id);
+          }}
+          style={styles.actionButton}
+        >
+          <Ionicons name="trash-outline" size={22} color={colors.danger} />
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 
   return (
-    // Usamos el contenedor común que ya incluye SafeAreaView y padding básico
     <SafeAreaView style={commonStyles.container}>
-        {/* Contenedor para el input y el botón de añadir */}
       <View style={styles.inputContainer}>
         <TextInput
           style={[commonStyles.input, styles.inputFlex]}
           placeholder="Nueva tarea pendiente..."
           value={inputText}
           onChangeText={setInputText}
+          editable={taskStatus !== "loading"}
         />
-        <Button title="Añadir" onPress={handleAddTask} color={colors.primary}/>
+        <Button
+          title="Añadir"
+          onPress={handleAddTask}
+          color={colors.primary}
+          disabled={taskStatus === "loading"}
+        />
       </View>
 
-       {/* Muestra mensaje o la lista */}
-       {pendingTasks.length === 0 ? (
-          <View style={styles.emptyContainer}>
-              <Text style={commonStyles.text}>No hay tareas pendientes.</Text>
-          </View>
+      {taskStatus === "loading" && pendingTasks.length === 0 && (
+        <ActivityIndicator
+          size="large"
+          color={colors.primary}
+          style={{ marginTop: 20 }}
+        />
+      )}
+
+      {taskError && (
+        <Text style={commonStyles.errorText}>Error: {taskError}</Text>
+      )}
+
+      {pendingTasks.length === 0 && taskStatus !== "loading" ? (
+        <View style={styles.emptyContainer}>
+          <Text style={commonStyles.text}>No hay tareas pendientes.</Text>
+        </View>
       ) : (
-          <FlatList
-            data={pendingTasks}
-            renderItem={renderItem}
-            keyExtractor={item => item.id}
-            style={styles.list}
-          />
+        <FlatList
+          data={pendingTasks}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          style={styles.list}
+        />
       )}
     </SafeAreaView>
   );
 }
 
-// Estilos específicos de HomeScreen
 const styles = StyleSheet.create({
   inputContainer: {
-    flexDirection: 'row',
-    marginBottom: 20, // Aumentamos un poco el margen inferior también
-    alignItems: 'center',
-    marginTop: 10, // <-- AÑADIDO: Margen superior para bajar el input
-    paddingHorizontal: 5, // Añadimos un ligero padding horizontal si es necesario
+    flexDirection: "row",
+    marginBottom: 20,
+    alignItems: "center",
+    marginTop: 10,
+    paddingHorizontal: 5,
   },
-  inputFlex: {
-      flex: 1,
-      marginRight: 10,
-      marginBottom: 0,
-  },
-  list: {
-    flex: 1,
-    marginTop: 10, // Añadimos un margen superior a la lista también
-  },
+  inputFlex: { flex: 1, marginRight: 10, marginBottom: 0 },
+  list: { flex: 1, marginTop: 10 },
   taskItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.grey,
-    paddingHorizontal: 5, // Padding horizontal para los items
+    paddingHorizontal: 5,
   },
-  taskTextContainer: {
-    flex: 1,
-    marginRight: 10,
-  },
-  dueDateText: {
-    fontSize: 12,
-    color: colors.darkGrey,
-    marginTop: 4,
-  },
-  actionButton: {
-      padding: 10,
-      marginLeft: 5,
-  },
-  emptyContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-  }
+  taskTextContainer: { flex: 1, marginRight: 10 },
+  dueDateText: { fontSize: 12, color: colors.darkGrey, marginTop: 4 },
+  locationText: { fontSize: 11, color: colors.darkGrey, marginTop: 2 },
+  actionButton: { padding: 10, marginLeft: 5 },
+  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

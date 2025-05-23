@@ -1,62 +1,68 @@
-import React, { useState } from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  Alert,
-} from "react-native";
-import { commonStyles, colors } from "../styles/commonStyles";
-
+import React, { useState } from 'react';
+import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { commonStyles, colors } from '../styles/commonStyles';
+import { auth } from '../firebase/firebaseConfig';
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function SignUpScreen({ navigation }) {
-  
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(""); 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  
-  const handleCreateAccount = () => {
-    setError(""); 
+  const handleCreateAccount = async () => {
+    setError('');
+    setIsLoading(true);
 
-    
     if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
-      setError("Todos los campos son obligatorios.");
+      setError('Todos los campos son obligatorios.');
+      setIsLoading(false);
       return;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      
-      setError("Por favor, introduce un email válido.");
-      return;
+        setError('Por favor, introduce un email válido.');
+        setIsLoading(false);
+        return;
     }
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
+        setError('La contraseña debe tener al menos 6 caracteres.');
+        setIsLoading(false);
+        return;
     }
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+      setError('Las contraseñas no coinciden.');
+      setIsLoading(false);
       return;
     }
 
-    // Simulación de creación de cuenta (aquí iría la lógica de Firebase)
-    console.log("Intentando crear cuenta con:");
-    console.log("Email:", email);
-    console.log("Password:", password);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      setIsLoading(false);
 
-    // Muestra una alerta de éxito (temporal)
-    Alert.alert(
-      "Cuenta Creada (Simulación)",
-      `Email: ${email}\nLa conexión con Firebase se implementará más adelante.`,
-      [{ text: "OK", onPress: () => navigation.goBack() }] // Vuelve al login después de "crear"
-    );
+      Alert.alert(
+        'Cuenta Creada Exitosamente',
+        `Tu cuenta para ${userCredential.user.email} ha sido creada. Serás redirigido.`,
+        
+        [{ text: 'OK' }]
+      );
+      
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
 
-    // Limpiar campos después del intento (opcional)
-    // setEmail('');
-    // setPassword('');
-    // setConfirmPassword('');
+    } catch (firebaseError) {
+      setIsLoading(false);
+      
+      if (firebaseError.code === 'auth/email-already-in-use') {
+        setError('Este correo electrónico ya está en uso.');
+      } else if (firebaseError.code === 'auth/weak-password') {
+        setError('La contraseña es demasiado débil.');
+      } else {
+        setError('Ocurrió un error al crear la cuenta. Intenta de nuevo.');
+      }
+    }
   };
 
   return (
@@ -64,55 +70,52 @@ export default function SignUpScreen({ navigation }) {
       <View style={styles.content}>
         <Text style={commonStyles.title}>Crear Nueva Cuenta</Text>
 
-        {/* Input para el Email */}
         <TextInput
-          placeholder="Correo Electrónico"
-          style={[commonStyles.input, styles.inputField]}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
+            placeholder="Correo Electrónico"
+            style={[commonStyles.input, styles.inputField]}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            editable={!isLoading}
+        />
+        <TextInput
+            placeholder="Contraseña (mín. 6 caracteres)"
+            style={[commonStyles.input, styles.inputField]}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={true}
+            editable={!isLoading}
+        />
+        <TextInput
+            placeholder="Confirmar Contraseña"
+            style={[commonStyles.input, styles.inputField]}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={true}
+            editable={!isLoading}
         />
 
-        {/* Input para la Contraseña */}
-        <TextInput
-          placeholder="Contraseña (mín. 6 caracteres)"
-          style={[commonStyles.input, styles.inputField]}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={true}
-        />
+        {error ? <Text style={[commonStyles.errorText, styles.errorTextCustom]}>{error}</Text> : null}
 
-        {/* Input para Confirmar Contraseña */}
-        <TextInput
-          placeholder="Confirmar Contraseña"
-          style={[commonStyles.input, styles.inputField]}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry={true}
-        />
+        {isLoading ? (
+            <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+        ) : (
+            <View style={styles.buttonContainer}>
+                <Button
+                    title="Crear Cuenta"
+                    onPress={handleCreateAccount}
+                    color={colors.primary}
+                    disabled={isLoading}
+                />
+            </View>
+        )}
 
-        {/* Muestra el mensaje de error si existe */}
-        {error ? (
-          <Text style={[commonStyles.errorText, styles.errorTextCustom]}>
-            {error}
-          </Text>
-        ) : null}
-
-        {/* Botón para Crear Cuenta */}
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Crear Cuenta"
-            onPress={handleCreateAccount}
-            color={colors.primary}
-          />
-        </View>
-
-        {/* Botón para volver al Login */}
         <Button
-          title="Ya tengo cuenta (Ir a Login)"
-          onPress={() => navigation.navigate("Login")} // Navega a la pantalla de Login
-          color={colors.secondary}
+            title="Ya tengo cuenta (Ir a Login)"
+            onPress={() => navigation.navigate('Login')} 
+            color={colors.secondary}
+            disabled={isLoading}
         />
       </View>
     </SafeAreaView>
@@ -120,22 +123,25 @@ export default function SignUpScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  content: {
-    width: "85%",
-    alignItems: "center",
-  },
-  inputField: {
-    width: "100%", 
-    marginBottom: 15, 
-  },
-  buttonContainer: {
-    width: "100%",
-    marginTop: 10, 
-    marginBottom: 20, 
-  },
-  errorTextCustom: {
-    
-    textAlign: "center",
-    marginBottom: 10,
-  },
+    content: {
+        width: '85%',
+        alignItems: 'center',
+    },
+    inputField: {
+      width: '100%',
+      marginBottom: 15,
+    },
+    buttonContainer: {
+        width: '100%',
+        marginTop: 10,
+        marginBottom: 20,
+    },
+    errorTextCustom: {
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    loader: {
+        marginTop: 10,
+        marginBottom: 20,
+    }
 });

@@ -5,37 +5,38 @@ import {
   Text,
   Button,
   StyleSheet,
-  TextInput,
   Image,
   TouchableOpacity,
-  ScrollView, 
+  ScrollView,
   Alert,
-  Platform, 
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { commonStyles, colors } from "../styles/commonStyles";
-import { Ionicons } from "@expo/vector-icons"; 
-import * as ImagePicker from "expo-image-picker"; 
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { auth } from "../firebase/firebaseConfig";
+import { signOut } from "firebase/auth";
 
 export default function SettingsScreen({ navigation }) {
-  
-  const [profileImage, setProfileImage] = useState(null); // URI de la imagen de perfil
+  const currentUser = auth.currentUser;
 
-  
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [profileImage, setProfileImage] = useState(
+    currentUser?.photoURL || null
+  );
 
-  // --- Lógica para Foto de Perfil ---
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   useEffect(() => {
-    // Solicitar permisos al cargar la pantalla (o al intentar usar la cámara/galería)
+    if (currentUser) {
+      setProfileImage(currentUser.photoURL);
+    }
+
     (async () => {
       if (Platform.OS !== "web") {
-        
         const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
         const mediaLibraryStatus =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
-
         if (cameraStatus.status !== "granted") {
           Alert.alert(
             "Permiso denegado",
@@ -50,9 +51,8 @@ export default function SettingsScreen({ navigation }) {
         }
       }
     })();
-  }, []);
+  }, [currentUser]);
 
-  // Función para seleccionar imagen de la galería
   const pickImageFromGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -62,21 +62,21 @@ export default function SettingsScreen({ navigation }) {
       );
       return;
     }
-
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Solo imágenes
-      allowsEditing: true, 
-      aspect: [1, 1], 
-      quality: 0.5, 
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
     });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setProfileImage(result.assets[0].uri);
 
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri); // Actualiza el estado con la URI de la imagen seleccionada
-      console.log("Imagen seleccionada de galería:", result.assets[0].uri);
+      Alert.alert(
+        "Foto Seleccionada",
+        "La funcionalidad de guardar esta foto en tu perfil está pendiente."
+      );
     }
   };
-
-  // Función para tomar una foto con la cámara
   const takePhotoWithCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
@@ -86,79 +86,64 @@ export default function SettingsScreen({ navigation }) {
       );
       return;
     }
-
     let result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.5,
     });
-
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri); // Actualiza el estado con la URI de la foto tomada
-      console.log("Foto tomada con cámara:", result.assets[0].uri);
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setProfileImage(result.assets[0].uri);
+      Alert.alert(
+        "Foto Tomada",
+        "La funcionalidad de guardar esta foto en tu perfil está pendiente."
+      );
     }
   };
 
-  // --- Lógica para Cambiar Contraseña ---
-  const handleChangePassword = () => {
-    setPasswordError(""); // Limpia errores previos
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-      setPasswordError("Todos los campos de contraseña son obligatorios.");
-      return;
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out from Firebase:", error);
+      Alert.alert("Error", "No se pudo cerrar la sesión correctamente.");
+    } finally {
+      setIsLoggingOut(false);
     }
-    if (newPassword.length < 6) {
-      setPasswordError("La nueva contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-    if (newPassword !== confirmNewPassword) {
-      setPasswordError("Las nuevas contraseñas no coinciden.");
-      return;
-    }
+  };
 
-    // Aquí iría la lógica para verificar la contraseña actual y cambiarla en Firebase Auth
-    console.log("Intentando cambiar contraseña...");
-    console.log("Actual:", currentPassword, "Nueva:", newPassword);
-    Alert.alert(
-      "Contraseña (Simulación)",
-      "La funcionalidad de cambio de contraseña se conectará con Firebase más adelante.",
-      [{ text: "OK" }]
+  if (!currentUser && !isLoggingOut) {
+    return (
+      <SafeAreaView style={commonStyles.centeredContainer}>
+        <Text>No hay usuario activo. Por favor, inicia sesión.</Text>
+        <Button
+          title="Ir a Login"
+          onPress={() => navigation.navigate("Login")}
+        />
+      </SafeAreaView>
     );
-    // Limpiar campos
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmNewPassword("");
-  };
-
-  // --- Lógica para Cerrar Sesión ---
-  const handleLogout = () => {
-    // Aquí iría la lógica para limpiar el estado de autenticación (ej. en Redux si se usa para auth)
-    // y navegar de vuelta a la pantalla de Login
-    console.log("Cerrar sesión presionado");
-    navigation.navigate("Login"); 
-  };
+  }
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={[commonStyles.title, styles.screenTitle]}>
-          Ajustes de Perfil
-        </Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={[commonStyles.title, styles.screenTitle]}>Ajustes</Text>
 
         {/* Sección Foto de Perfil */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Foto de Perfil</Text>
           <TouchableOpacity
             onPress={() =>
-              Alert.alert(
-                "Seleccionar Imagen",
-                "Elige una opción para tu foto de perfil:",
-                [
-                  { text: "Galería", onPress: pickImageFromGallery },
-                  { text: "Cámara", onPress: takePhotoWithCamera },
-                  { text: "Cancelar", style: "cancel" },
-                ]
-              )
+              Alert.alert("Seleccionar Imagen", "Elige una opción:", [
+                { text: "Galería", onPress: pickImageFromGallery },
+                { text: "Cámara", onPress: takePhotoWithCamera },
+                { text: "Cancelar", style: "cancel" },
+              ])
             }
+            disabled={isLoggingOut}
           >
             {profileImage ? (
               <Image
@@ -178,49 +163,28 @@ export default function SettingsScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Sección Cambiar Contraseña */}
+        {/* Sección Email del Usuario */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Cambiar Contraseña</Text>
-          <TextInput
-            placeholder="Contraseña Actual"
-            style={[commonStyles.input, styles.inputField]}
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-            secureTextEntry
-          />
-          <TextInput
-            placeholder="Nueva Contraseña"
-            style={[commonStyles.input, styles.inputField]}
-            value={newPassword}
-            onChangeText={setNewPassword}
-            secureTextEntry
-          />
-          <TextInput
-            placeholder="Confirmar Nueva Contraseña"
-            style={[commonStyles.input, styles.inputField]}
-            value={confirmNewPassword}
-            onChangeText={setConfirmNewPassword}
-            secureTextEntry
-          />
-          {passwordError ? (
-            <Text style={[commonStyles.errorText, styles.errorTextCustom]}>
-              {passwordError}
-            </Text>
-          ) : null}
-          <Button
-            title="Actualizar Contraseña"
-            onPress={handleChangePassword}
-            color={colors.primary}
-          />
+          <Text style={styles.sectionTitle}>Correo Electrónico</Text>
+          <Text style={styles.emailText}>{currentUser?.email}</Text>
         </View>
 
         {/* Sección Cerrar Sesión */}
         <View style={[styles.sectionContainer, styles.logoutSection]}>
-          <Button
-            title="Cerrar Sesión"
-            onPress={handleLogout}
-            color={colors.danger}
-          />
+          {isLoggingOut ? (
+            <ActivityIndicator
+              size="small"
+              color={colors.danger}
+              style={styles.activityIndicator}
+            />
+          ) : (
+            <Button
+              title="Cerrar Sesión"
+              onPress={handleLogout}
+              color={colors.danger}
+              disabled={!currentUser}
+            />
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -228,14 +192,8 @@ export default function SettingsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  screenTitle: {
-    marginTop: 10, 
-    marginBottom: 20,
-  },
-  sectionContainer: {
-    marginBottom: 30, 
-    paddingHorizontal: 5, 
-  },
+  screenTitle: { marginTop: 10, marginBottom: 30 },
+  sectionContainer: { marginBottom: 40, paddingHorizontal: 10 },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -245,10 +203,10 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 120,
     height: 120,
-    borderRadius: 60, 
-    alignSelf: "center", 
+    borderRadius: 60,
+    alignSelf: "center",
     marginBottom: 10,
-    backgroundColor: colors.light, 
+    backgroundColor: colors.light,
   },
   profileImagePlaceholder: {
     width: 120,
@@ -262,23 +220,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.grey,
   },
-  placeholderText: {
-    fontSize: 12,
-    color: colors.darkGrey,
-    marginTop: 5,
-  },
-  inputField: {
-    width: "100%",
-    marginBottom: 15,
-  },
-  errorTextCustom: {
-    textAlign: "center",
-    marginBottom: 10,
+  placeholderText: { fontSize: 12, color: colors.darkGrey, marginTop: 5 },
+  emailText: {
+    fontSize: 16,
+    color: colors.dark,
+    padding: 10,
+    backgroundColor: colors.light,
+    borderRadius: 5,
   },
   logoutSection: {
-    marginTop: 20,
+    marginTop: 30,
     borderTopWidth: 1,
     borderTopColor: colors.grey,
-    paddingTop: 20,
+    paddingTop: 30,
+    alignItems: "center",
   },
+  activityIndicator: { marginVertical: 10 },
 });
