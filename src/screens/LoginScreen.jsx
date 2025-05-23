@@ -11,9 +11,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { commonStyles, colors } from "../styles/commonStyles";
-import { saveActiveSession } from "../database/db"; 
-import { auth } from "../firebase/firebaseConfig"; 
-import { signInWithEmailAndPassword } from "firebase/auth"; 
+import { saveActiveSession } from "../database/db";
+import { auth } from "../firebase/firebaseConfig";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -44,11 +44,8 @@ export default function LoginScreen({ navigation }) {
       setEmail("");
       setPassword("");
     } catch (firebaseError) {
-      console.error(
-        "Error al iniciar sesión con Firebase:",
-        firebaseError.code,
-        firebaseError.message
-      );
+      firebaseError.code, firebaseError.message;
+
       if (
         firebaseError.code === "auth/user-not-found" ||
         firebaseError.code === "auth/wrong-password" ||

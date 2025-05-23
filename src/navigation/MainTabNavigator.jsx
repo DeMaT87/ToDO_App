@@ -35,7 +35,6 @@ export default function MainTabNavigator() {
         headerShown: false,
       })}
     >
-      {/* Define cada pestaña */}
       <Tab.Screen name="Tareas" component={HomeScreen} />
       <Tab.Screen name="Completadas" component={CompletedTasksScreen} />
       <Tab.Screen name="Ajustes" component={SettingsScreen} />

@@ -16,7 +16,6 @@ export const fetchTasksFromFirebase = createAsyncThunk(
   async (_, { dispatch, getState }) => {
     const userId = auth.currentUser?.uid;
     if (!userId) {
-      console.log("fetchTasksFromFirebase: No user logged in");
       return [];
     }
     const tasksRef = ref(database, `tasks/${userId}`);
@@ -36,7 +35,6 @@ export const fetchTasksFromFirebase = createAsyncThunk(
           resolve(loadedTasks);
         },
         (error) => {
-          console.error("Error fetching tasks from Firebase:", error);
           reject(error);
         },
         { onlyOnce: true }

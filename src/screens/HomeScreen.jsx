@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert, 
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
@@ -31,7 +32,6 @@ export default function HomeScreen({ navigation }) {
   const dispatch = useDispatch();
 
   const pendingTasks = useSelector(selectPendingTasks);
-
   const taskStatus = useSelector((state) => state.tasks.status);
   const taskError = useSelector((state) => state.tasks.error);
 
@@ -41,11 +41,8 @@ export default function HomeScreen({ navigation }) {
         .unwrap()
         .then(() => {
           setInputText("");
-          console.log("Task added to Firebase successfully");
         })
         .catch((error) => {
-          console.error("Failed to add task to Firebase:", error);
-
           Alert.alert("Error", "No se pudo añadir la tarea.");
         });
     }
@@ -54,9 +51,8 @@ export default function HomeScreen({ navigation }) {
   const handleDeleteTask = (id) => {
     dispatch(deleteTaskFromFirebase(id))
       .unwrap()
-      .then(() => console.log("Task deleted from Firebase successfully"))
+      .then(() => {})
       .catch((error) => {
-        console.error("Failed to delete task from Firebase:", error);
         Alert.alert("Error", "No se pudo eliminar la tarea.");
       });
   };
@@ -64,11 +60,8 @@ export default function HomeScreen({ navigation }) {
   const handleToggleComplete = (task) => {
     dispatch(updateTaskInFirebase({ id: task.id, completed: !task.completed }))
       .unwrap()
-      .then(() =>
-        console.log("Task completion toggled in Firebase successfully")
-      )
+      .then(() => {})
       .catch((error) => {
-        console.error("Failed to toggle task completion in Firebase:", error);
         Alert.alert("Error", "No se pudo actualizar el estado de la tarea.");
       });
   };

@@ -2,6 +2,8 @@
 
 Este repositorio contiene el código fuente para una aplicación móvil de lista de tareas (ToDo) desarrollada con React Native y Expo, con funcionalidades de autenticación y persistencia de datos utilizando Firebase y SQLite.
 
+---
+
 ## Tecnologías Utilizadas
 
 - **Framework:** React Native (gestionado con Expo)
@@ -24,14 +26,15 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
   - Registro de nuevos usuarios con correo y contraseña (`SignUpScreen`).
   - Inicio de sesión de usuarios existentes (`LoginScreen`).
   - **Persistencia de Sesión Local:**
+- **Persistencia de Sesión Local:**
   - Uso de `expo-sqlite` para recordar la sesión del usuario en el dispositivo.
   - Inicio de sesión automático si hay una sesión activa guardada.
 - **Navegación Principal:**
   - Stack Navigator condicional que muestra pantallas de autenticación o la app principal según el estado de login.
   - Bottom Tab Navigator (`MainTabNavigator`) con tres pestañas para usuarios autenticados:
-    - **Tareas:** Muestra `HomeScreen`.
-    - **Completadas:** Muestra `CompletedTasksScreen`.
-    - **Ajustes:** Muestra `SettingsScreen`.
+    - Tareas: Muestra `HomeScreen`.
+    - Completadas: Muestra `CompletedTasksScreen`.
+    - Ajustes: Muestra `SettingsScreen`.
 - **Gestión de Tareas con Firebase Realtime Database y Redux:**
   - Las tareas se almacenan en Firebase RTDB bajo el nodo `/tasks/{userId}/`.
   - Listener en tiempo real en `App.js` que sincroniza las tareas de Firebase con el store de Redux.
@@ -46,19 +49,31 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
   - **Pantalla Detalle de Tarea (`TaskDetailScreen`):**
     - Ver/Editar el texto de la tarea.
     - Asignar/Modificar fecha y hora de vencimiento.
-    - **Ubicación:**
+    - Ubicación:
       - Permite añadir/actualizar la ubicación actual a la tarea.
       - Solicita permisos de ubicación.
       - Obtiene coordenadas y realiza geocodificación inversa para mostrar una dirección legible.
-    - Todos los cambios se guardan en Firebase.
+      - Todos los cambios se guardan en Firebase.
 - **Ajustes (`SettingsScreen`):**
   - **Foto de Perfil:** Permite seleccionar una imagen de la galería o tomar una foto con la cámara (la subida a Firebase Storage y actualización del `photoURL` en Auth está pendiente).
   - **Mostrar Email:** Muestra el correo electrónico del usuario autenticado.
   - **Cierre de Sesión:** Cierra la sesión del usuario en Firebase y limpia la sesión local de SQLite.
 - **Estilos Centralizados:** Uso de `commonStyles.js` para una apariencia básica consistente.
 
+---
 
-    
+## Instalación y Ejecución
+
+1.  **Configurar Firebase (Paso Previo Esencial):**
+
+    - Crea un proyecto en la [Consola de Firebase](https://console.firebase.google.com/).
+    - Habilita **Authentication** (Email/Contraseña).
+    - Crea una **Realtime Database** (en modo de prueba para desarrollo inicial).
+    - Habilita **Storage** (con reglas de seguridad básicas para desarrollo).
+    - Registra tus apps (iOS y Android) en el proyecto de Firebase.
+    - Descarga los archivos `google-services.json` (para Android) y `GoogleService-Info.plist` (para iOS) y colócalos en la **raíz** de tu proyecto Expo.
+    - Copia las credenciales de configuración web de tu app Firebase en `src/firebase/firebaseConfig.js`.
+
 2.  **Clonar el Repositorio (si aplica):**
 
     ```bash
@@ -71,7 +86,11 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
 
     ```bash
     npm install
-    # o
+    ```
+
+    o
+
+    ```bash
     yarn install
     ```
 
