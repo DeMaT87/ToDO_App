@@ -18,7 +18,11 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
   - `expo-image-picker` (para selección/toma de fotos de perfil)
   - `expo-location` (para obtener ubicación actual y geocodificación inversa)
 - **Iconos:** `@expo/vector-icons` (específicamente `Ionicons`)
-- **Estilos:** React Native `StyleSheet`, con estilos comunes centralizados.
+- **Estilos Profesionales:**
+    * Aplicación de una paleta de colores sobrios y diseños redondeados en toda la aplicación.
+    * Uso de `commonStyles.js` para una apariencia visual consistente y profesional.
+    * Botones personalizados usando `TouchableOpacity` para mayor control de estilos.
+    * Mejoras en el layout para evitar superposición con el notch/barra de estado.
 
 ## Funcionalidades Implementadas
 
