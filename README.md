@@ -66,12 +66,13 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
 
 1.  **Configurar Firebase (Paso Previo Esencial):**
 
+    
     - Crea un proyecto en la [Consola de Firebase](https://console.firebase.google.com/).
     - Habilita **Authentication** (Email/Contraseña).
     - Crea una **Realtime Database** (en modo de prueba para desarrollo inicial).
     - Habilita **Storage** (con reglas de seguridad básicas para desarrollo).
     - Registra tus apps (iOS y Android) en el proyecto de Firebase.
-    - Descarga los archivos `google-services.json` (para Android) y `GoogleService-Info.plist` (para iOS) y colócalos en la **raíz** de tu proyecto Expo.
+    - Descarga los archivos `google-services.json` (Android) y `GoogleService-Info.plist` (iOS) y colócalos en la **raíz** de tu proyecto Expo.
     - Copia las credenciales de configuración web de tu app Firebase en `src/firebase/firebaseConfig.js`.
 
 2.  **Clonar el Repositorio (si aplica):**

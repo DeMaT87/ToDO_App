@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
   Text,
-  Button,
   StyleSheet,
   Image,
   TouchableOpacity,
@@ -12,7 +11,12 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { commonStyles, colors } from "../styles/commonStyles";
+import {
+  commonStyles,
+  colors,
+  spacing,
+  borderRadius,
+} from "../styles/commonStyles";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { auth } from "../firebase/firebaseConfig";
@@ -24,7 +28,6 @@ export default function SettingsScreen({ navigation }) {
   const [profileImage, setProfileImage] = useState(
     currentUser?.photoURL || null
   );
-
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
@@ -34,16 +37,16 @@ export default function SettingsScreen({ navigation }) {
 
     (async () => {
       if (Platform.OS !== "web") {
-        const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
-        const mediaLibraryStatus =
+        const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+        const mediaPerm =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (cameraStatus.status !== "granted") {
+        if (cameraPerm.status !== "granted") {
           Alert.alert(
             "Permiso denegado",
             "Se necesita permiso para acceder a la cámara."
           );
         }
-        if (mediaLibraryStatus.status !== "granted") {
+        if (mediaPerm.status !== "granted") {
           Alert.alert(
             "Permiso denegado",
             "Se necesita permiso para acceder a la galería."
@@ -53,12 +56,33 @@ export default function SettingsScreen({ navigation }) {
     })();
   }, [currentUser]);
 
+  const handleImagePicked = async (pickerResult) => {
+    if (!pickerResult || pickerResult.canceled) {
+      return;
+    }
+    if (
+      !pickerResult.assets ||
+      pickerResult.assets.length === 0 ||
+      !pickerResult.assets[0].uri
+    ) {
+      Alert.alert("Error", "No se pudo obtener la imagen seleccionada.");
+      return;
+    }
+
+    const imageUri = pickerResult.assets[0].uri;
+    setProfileImage(imageUri);
+    Alert.alert(
+      "Foto Actualizada Localmente",
+      "La foto de perfil se ha actualizado en la pantalla."
+    );
+  };
+
   const pickImageFromGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
         "Permiso denegado",
-        "Lo sentimos, necesitamos permiso para acceder a tu galería para que esto funcione."
+        "Necesitamos permiso para acceder a tu galería."
       );
       return;
     }
@@ -68,21 +92,15 @@ export default function SettingsScreen({ navigation }) {
       aspect: [1, 1],
       quality: 0.5,
     });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setProfileImage(result.assets[0].uri);
-
-      Alert.alert(
-        "Foto Seleccionada",
-        "La funcionalidad de guardar esta foto en tu perfil está pendiente."
-      );
-    }
+    await handleImagePicked(result); // Llama a la función modificada
   };
+
   const takePhotoWithCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
         "Permiso denegado",
-        "Lo sentimos, necesitamos permiso para acceder a tu cámara para que esto funcione."
+        "Necesitamos permiso para acceder a tu cámara."
       );
       return;
     }
@@ -91,13 +109,7 @@ export default function SettingsScreen({ navigation }) {
       aspect: [1, 1],
       quality: 0.5,
     });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setProfileImage(result.assets[0].uri);
-      Alert.alert(
-        "Foto Tomada",
-        "La funcionalidad de guardar esta foto en tu perfil está pendiente."
-      );
-    }
+    await handleImagePicked(result);
   };
 
   const handleLogout = async () => {
@@ -105,8 +117,7 @@ export default function SettingsScreen({ navigation }) {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error("Error signing out from Firebase:", error);
-      Alert.alert("Error", "No se pudo cerrar la sesión correctamente.");
+      Alert.alert("Error", "No se pudo cerrar la sesión.");
     } finally {
       setIsLoggingOut(false);
     }
@@ -115,125 +126,169 @@ export default function SettingsScreen({ navigation }) {
   if (!currentUser && !isLoggingOut) {
     return (
       <SafeAreaView style={commonStyles.centeredContainer}>
-        <Text>No hay usuario activo. Por favor, inicia sesión.</Text>
-        <Button
-          title="Ir a Login"
+        <Text style={commonStyles.text}>No hay usuario activo.</Text>
+        <TouchableOpacity
+          style={[commonStyles.button, { marginTop: spacing.md }]}
           onPress={() => navigation.navigate("Login")}
-        />
+        >
+          <Text style={commonStyles.buttonText}>Ir a Login</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text style={[commonStyles.title, styles.screenTitle]}>Ajustes</Text>
+      <View style={styles.screenPadding}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+        >
+          <Text style={[commonStyles.title, styles.screenTitle]}>
+            Ajustes de Perfil
+          </Text>
 
-        {/* Sección Foto de Perfil */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Foto de Perfil</Text>
-          <TouchableOpacity
-            onPress={() =>
-              Alert.alert("Seleccionar Imagen", "Elige una opción:", [
-                { text: "Galería", onPress: pickImageFromGallery },
-                { text: "Cámara", onPress: takePhotoWithCamera },
-                { text: "Cancelar", style: "cancel" },
-              ])
-            }
-            disabled={isLoggingOut}
-          >
-            {profileImage ? (
-              <Image
-                source={{ uri: profileImage }}
-                style={styles.profileImage}
-              />
-            ) : (
-              <View style={styles.profileImagePlaceholder}>
-                <Ionicons
-                  name="person-circle-outline"
-                  size={80}
-                  color={colors.darkGrey}
+          <View style={[commonStyles.card, styles.sectionContainer]}>
+            <Text style={commonStyles.label}>Foto de Perfil (Local)</Text>
+            <TouchableOpacity
+              style={styles.profileImageTouchable}
+              onPress={() =>
+                Alert.alert("Actualizar Foto", "Elige una opción:", [
+                  { text: "Galería", onPress: pickImageFromGallery },
+                  { text: "Cámara", onPress: takePhotoWithCamera },
+                  { text: "Cancelar", style: "cancel" },
+                ])
+              }
+              disabled={isLoggingOut}
+            >
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={styles.profileImage}
                 />
-                <Text style={styles.placeholderText}>Tocar para cambiar</Text>
-              </View>
+              ) : (
+                <View style={styles.profileImagePlaceholder}>
+                  <Ionicons
+                    name="person-circle-outline"
+                    size={80}
+                    color={colors.placeholder}
+                  />
+                  <Text
+                    style={[commonStyles.textSecondary, styles.placeholderText]}
+                  >
+                    Tocar para cambiar
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <View style={[commonStyles.card, styles.sectionContainer]}>
+            <Text style={commonStyles.label}>Correo Electrónico</Text>
+            <View style={styles.emailDisplay}>
+              <Ionicons
+                name="mail-outline"
+                size={20}
+                color={colors.textSecondary}
+                style={{ marginRight: spacing.sm }}
+              />
+              <Text style={[commonStyles.text, styles.emailText]}>
+                {currentUser?.email}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.logoutButtonContainer}>
+            {isLoggingOut ? (
+              <ActivityIndicator size="large" color={colors.error} />
+            ) : (
+              <TouchableOpacity
+                style={[commonStyles.button, styles.logoutButton]}
+                onPress={handleLogout}
+                disabled={!currentUser}
+              >
+                <Ionicons
+                  name="log-out-outline"
+                  size={20}
+                  color={colors.surface}
+                  style={{ marginRight: spacing.sm }}
+                />
+                <Text style={commonStyles.buttonText}>Cerrar Sesión</Text>
+              </TouchableOpacity>
             )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Sección Email del Usuario */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Correo Electrónico</Text>
-          <Text style={styles.emailText}>{currentUser?.email}</Text>
-        </View>
-
-        {/* Sección Cerrar Sesión */}
-        <View style={[styles.sectionContainer, styles.logoutSection]}>
-          {isLoggingOut ? (
-            <ActivityIndicator
-              size="small"
-              color={colors.danger}
-              style={styles.activityIndicator}
-            />
-          ) : (
-            <Button
-              title="Cerrar Sesión"
-              onPress={handleLogout}
-              color={colors.danger}
-              disabled={!currentUser}
-            />
-          )}
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screenTitle: { marginTop: 10, marginBottom: 30 },
-  sectionContainer: { marginBottom: 40, paddingHorizontal: 10 },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.dark,
-    marginBottom: 15,
+  screenPadding: {
+    flex: 1,
+    paddingTop: Platform.OS === "android" ? spacing.lg : spacing.sm,
+  },
+  scrollContent: {
+    paddingBottom: spacing.lg,
+    paddingHorizontal: spacing.md,
+  },
+  screenTitle: {
+    marginBottom: spacing.lg,
+  },
+  sectionContainer: {
+    marginBottom: spacing.lg,
+  },
+  profileImageTouchable: {
+    alignItems: "center",
   },
   profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignSelf: "center",
-    marginBottom: 10,
-    backgroundColor: colors.light,
+    width: 150,
+    height: 150,
+    borderRadius: borderRadius.full,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.border,
   },
   profileImagePlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.light,
+    width: 150,
+    height: 150,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.surface,
     justifyContent: "center",
     alignItems: "center",
-    alignSelf: "center",
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: colors.grey,
+    marginBottom: spacing.sm,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderStyle: "dashed",
   },
-  placeholderText: { fontSize: 12, color: colors.darkGrey, marginTop: 5 },
+  placeholderText: {
+    marginTop: spacing.sm,
+  },
+  emailDisplay: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+  },
   emailText: {
     fontSize: 16,
-    color: colors.dark,
-    padding: 10,
-    backgroundColor: colors.light,
-    borderRadius: 5,
+    color: colors.text,
   },
-  logoutSection: {
-    marginTop: 30,
-    borderTopWidth: 1,
-    borderTopColor: colors.grey,
-    paddingTop: 30,
+  logoutButtonContainer: {
+    marginTop: spacing.lg,
     alignItems: "center",
   },
-  activityIndicator: { marginVertical: 10 },
+  logoutButton: {
+    backgroundColor: colors.error,
+    flexDirection: "row",
+    width: "100%",
+    maxWidth: 300,
+  },
+  activityIndicator: {
+    marginVertical: spacing.md,
+  },
 });

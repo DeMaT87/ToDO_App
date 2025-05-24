@@ -120,7 +120,6 @@ const tasksSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-
       .addCase(addTaskToFirebase.pending, (state) => {
         state.status = "loading";
       })

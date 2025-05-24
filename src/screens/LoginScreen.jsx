@@ -1,16 +1,22 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   SafeAreaView,
   TextInput,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import { commonStyles, colors } from "../styles/commonStyles";
+
+import {
+  commonStyles,
+  colors,
+  spacing,
+  borderRadius,
+} from "../styles/commonStyles";
 import { saveActiveSession } from "../database/db";
 import { auth } from "../firebase/firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -38,14 +44,7 @@ export default function LoginScreen({ navigation }) {
         password
       );
       const user = userCredential.user;
-
-      await saveActiveSession(user.uid);
-
-      setEmail("");
-      setPassword("");
     } catch (firebaseError) {
-      firebaseError.code, firebaseError.message;
-
       if (
         firebaseError.code === "auth/user-not-found" ||
         firebaseError.code === "auth/wrong-password" ||
@@ -68,88 +67,120 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <SafeAreaView style={commonStyles.centeredContainer}>
-      <View style={styles.content}>
-        <Text style={commonStyles.title}>Inicio de Sesión</Text>
-
-        <TextInput
-          placeholder="Correo Electrónico"
-          style={[commonStyles.input, styles.inputField]}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          editable={!isLoading}
-        />
-        <TextInput
-          placeholder="Contraseña"
-          style={[commonStyles.input, styles.inputField]}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={true}
-          editable={!isLoading}
-        />
-
-        {error ? (
-          <Text style={[commonStyles.errorText, styles.errorTextCustom]}>
-            {error}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoidingContainer}
+      >
+        <View style={styles.contentContainer}>
+          <Text style={[commonStyles.title, styles.title]}>Bienvenido</Text>
+          <Text style={[commonStyles.textSecondary, styles.subtitle]}>
+            Inicia sesión para continuar
           </Text>
-        ) : null}
 
-        {isLoading ? (
-          <ActivityIndicator
-            size="large"
-            color={colors.primary}
-            style={styles.loader}
+          <TextInput
+            placeholder="Correo Electrónico"
+            placeholderTextColor={colors.placeholder}
+            style={[commonStyles.input, styles.inputField]}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            editable={!isLoading}
           />
-        ) : (
-          <View style={styles.buttonContainer}>
-            <Button
-              title="Ingresar"
-              onPress={handleLogin}
-              color={colors.primary}
-              disabled={isLoading}
-            />
-          </View>
-        )}
+          <TextInput
+            placeholder="Contraseña"
+            placeholderTextColor={colors.placeholder}
+            style={[commonStyles.input, styles.inputField]}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={true}
+            editable={!isLoading}
+          />
 
-        <TouchableOpacity
-          onPress={handleGoToSignUp}
-          style={styles.signUpLink}
-          disabled={isLoading}
-        >
-          <Text style={styles.signUpText}>¿No tienes cuenta? Crear una</Text>
-        </TouchableOpacity>
-      </View>
+          {error ? <Text style={commonStyles.errorText}>{error}</Text> : null}
+
+          {isLoading ? (
+            <ActivityIndicator
+              size="large"
+              color={colors.primary}
+              style={styles.loader}
+            />
+          ) : (
+            <TouchableOpacity
+              style={[commonStyles.button, styles.loginButton]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              <Text style={commonStyles.buttonText}>Ingresar</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            onPress={handleGoToSignUp}
+            style={styles.signUpButton}
+            disabled={isLoading}
+          >
+            <Text style={[commonStyles.buttonTextSecondary, styles.signUpText]}>
+              ¿No tienes cuenta?{" "}
+              <Text style={styles.signUpLinkText}>Crear una</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    width: "85%",
+  keyboardAvoidingContainer: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
     alignItems: "center",
+  },
+  contentContainer: {
+    width: "90%",
+    maxWidth: 400,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    alignItems: "center",
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  title: {
+    marginBottom: spacing.sm,
+    color: colors.primary,
+  },
+  subtitle: {
+    marginBottom: spacing.xl,
+    textAlign: "center",
   },
   inputField: {
     width: "100%",
-    marginBottom: 15,
   },
-  buttonContainer: {
+  loginButton: {
     width: "100%",
-    marginBottom: 20,
   },
-  signUpLink: {
-    marginTop: 15,
+  signUpButton: {
+    marginTop: spacing.lg,
+    padding: spacing.sm,
   },
   signUpText: {
-    color: colors.primary,
-    textDecorationLine: "underline",
-  },
-  errorTextCustom: {
     textAlign: "center",
-    marginBottom: 10,
+  },
+  signUpLinkText: {
+    fontWeight: "bold",
+    color: colors.primary,
   },
   loader: {
-    marginTop: 10,
-    marginBottom: 20,
+    marginVertical: spacing.md,
   },
 });
