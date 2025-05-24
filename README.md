@@ -18,11 +18,7 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
   - `expo-image-picker` (para selección/toma de fotos de perfil)
   - `expo-location` (para obtener ubicación actual y geocodificación inversa)
 - **Iconos:** `@expo/vector-icons` (específicamente `Ionicons`)
-- **Estilos Profesionales:**
-    * Aplicación de una paleta de colores sobrios y diseños redondeados en toda la aplicación.
-    * Uso de `commonStyles.js` para una apariencia visual consistente y profesional.
-    * Botones personalizados usando `TouchableOpacity` para mayor control de estilos.
-    * Mejoras en el layout para evitar superposición con el notch/barra de estado.
+- **Estilos:** React Native `StyleSheet`, con estilos comunes centralizados y un enfoque profesional (colores sobrios, elementos redondeados).
 
 ## Funcionalidades Implementadas
 
@@ -62,31 +58,24 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
   - **Foto de Perfil:** Permite seleccionar una imagen de la galería o tomar una foto con la cámara (la subida a Firebase Storage y actualización del `photoURL` en Auth está pendiente).
   - **Mostrar Email:** Muestra el correo electrónico del usuario autenticado.
   - **Cierre de Sesión:** Cierra la sesión del usuario en Firebase y limpia la sesión local de SQLite.
-- **Estilos Centralizados:** Uso de `commonStyles.js` para una apariencia básica consistente.
+- **Estilos Profesionales:**
+    * Aplicación de una paleta de colores sobrios y diseños redondeados en toda la aplicación.
+    * Uso de `commonStyles.js` para una apariencia visual consistente y profesional.
+    * Botones personalizados usando `TouchableOpacity` para mayor control de estilos.
+    * Mejoras en el layout para evitar superposición con el notch/barra de estado.
 
 ---
 
 ## Instalación y Ejecución
 
-1.  **Configurar Firebase (Paso Previo Esencial):**
-
-    
-    - Crea un proyecto en la [Consola de Firebase](https://console.firebase.google.com/).
-    - Habilita **Authentication** (Email/Contraseña).
-    - Crea una **Realtime Database** (en modo de prueba para desarrollo inicial).
-    - Habilita **Storage** (con reglas de seguridad básicas para desarrollo).
-    - Registra tus apps (iOS y Android) en el proyecto de Firebase.
-    - Descarga los archivos `google-services.json` (Android) y `GoogleService-Info.plist` (iOS) y colócalos en la **raíz** de tu proyecto Expo.
-    - Copia las credenciales de configuración web de tu app Firebase en `src/firebase/firebaseConfig.js`.
-
-2.  **Clonar el Repositorio (si aplica):**
+1.  **Clonar el Repositorio (si aplica):**
 
     ```bash
     git clone <url-del-repositorio>
     cd <nombre-del-directorio>
     ```
 
-3.  **Instalar Dependencias:**
+2.  **Instalar Dependencias:**
     Asegúrate de tener Node.js y npm/yarn instalados.
 
     ```bash
@@ -112,12 +101,12 @@ Este repositorio contiene el código fuente para una aplicación móvil de lista
     - `@react-native-community/datetimepicker`
     - `expo-image-picker`
     - `expo-location`
-    - `@react-native-async-storage/async-storage` (para persistencia de Firebase Auth)
+    - `@react-native-async-storage/async-storage` 
 
-4.  **Configurar Permisos en `app.json`:**
+3.  **Configurar Permisos en `app.json`:**
     Asegúrate de tener las descripciones de uso y permisos necesarios para la cámara, galería y ubicación en tu `app.json`, especialmente para iOS (`infoPlist`) y Android (`permissions`), y los plugins correspondientes (`expo-image-picker`, `expo-location`).
 
-5.  **Ejecutar la Aplicación:**
+4.  **Ejecutar la Aplicación:**
     Inicia el servidor de desarrollo de Expo:
     ```bash
     npx expo start --clear
